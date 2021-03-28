@@ -1,4 +1,6 @@
 <p align="center">
-	<img src="ERDiagram.png" width="500" title="ER Diagram" />
-	<img src="ERDiagram.png" width="500" title="Relations Scheme" />
+	<p>ER Diagram</p>
+	<img src="ERDiagram.png" width="500" />
+	<p>Relations Scheme</p>
+	<img src="RelationsScheme.png" width="500" />
 </p>
