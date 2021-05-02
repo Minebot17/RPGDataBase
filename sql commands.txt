@@ -1,0 +1,691 @@
+# I) Группа функциональных запросов
+# 1) Добавить в инвентарь персонажа предмет
+INSERT item_to_inventory (item_id, inventory_id, `count`)
+VALUES (1, 2, 10);
+
+# 2) Удалить из инвентаря персонажа определенный предмет
+DELETE FROM item_to_inventory 
+WHERE item_id = 1 AND inventory_id = 2;
+
+# 3) Поменять уровень персонажа на N
+UPDATE player
+SET `level` = 2
+WHERE `name` = 'Alkanoid';
+
+# 4) Пометить квест M персонажа N выполненным
+INSERT player_to_quest (player_id, quest_id)
+VALUES (1, 2);
+
+# 5) Создание нового персонажа пользователем на сервере
+INSERT player (`name`, experience, `level`, clan_id, location_id, account_id, server_id)
+VALUES ("DefaultName", 0, 1, null, 1, 1, 1);
+
+# 6) Отметить дату и время входа пользователя в игру
+INSERT entry_datetime (player_id, `date`)
+VALUES (1, NOW());
+
+# 7) Поменять локацию персонажа
+UPDATE player
+SET location_id = 3
+WHERE `name` = 'Alkanoid';
+
+# 8) Добавить нового питомца персонажу
+INSERT pet_to_player (player_id, pet_id)
+VALUES (1, 5);
+
+# 9) Добавить новое заклинание персонажа
+INSERT spell (`name`, damage, mana_cost)
+VALUES ('Rock wall', 0, 100);
+
+# 10) Установить клан персонажа
+UPDATE player
+SET clan_id = 3
+WHERE `name` = 'Alkanoid';
+
+# 11) Показать уровень всех персонажей
+SELECT `name` AS player_name, `level`
+FROM player;
+
+# 12) Показать все предметы конкретного персонажа
+SELECT item.*, item_to_inventory.`count`
+FROM item_to_inventory
+JOIN item
+ON item.id = item_to_inventory.item_id
+WHERE item_to_inventory.inventory_id = (
+	SELECT inventory.id 
+    FROM inventory 
+    WHERE inventory.owner_id = (
+		SELECT player.id
+        FROM player
+        WHERE player.`name` = 'Smokin Gun'
+    )
+);
+
+# 13) Показать список не выполненных квестов персонажа
+SELECT *
+FROM quest
+WHERE quest.id NOT IN (
+	SELECT player_to_quest.quest_id
+    FROM player_to_quest
+    WHERE player_to_quest.player_id = (
+		SELECT player.id
+        FROM player
+        WHERE player.`name` = 'HarpyWitch'
+    )
+);
+
+# 14) Показать дату и время всех входов в игру пользователя
+SELECT player.`name` AS player_name, entry_datetime.`date`
+FROM entry_datetime
+JOIN player
+ON player.id = entry_datetime.player_id
+WHERE player.`name` = 'MusicMiss';
+
+# 15) Показать список всех персонажей пользователя
+SELECT *
+FROM player
+WHERE player.account_id = (
+	SELECT `account`.id
+    FROM `account`
+    WHERE `account`.email = '1mudo.redaa@kentel.buzz'
+);
+
+# 16) Показать всех персонажей в клане
+SELECT *
+FROM player
+WHERE player.clan_id = (
+	SELECT clan.id
+    FROM clan
+    WHERE clan.`name` = 'Pack of wolves'
+);
+
+# 17) Показать все кланы на сервере
+SELECT *
+FROM clan
+WHERE clan.owner_id IN (
+	SELECT player.id
+    FROM player
+    WHERE player.server_id = (
+		SELECT `server`.id
+        FROM `server`
+        WHERE `server`.`name` = 'RU0'
+    )
+);
+
+# 18) Показать средний уровень всех персонажей в игре
+SELECT AVG(`level`) AS avg_level
+FROM player;
+
+# 19) Показать час суток, когда входов в игру больше всего
+SELECT HOUR(`date`) AS daily_hour
+FROM entry_datetime
+GROUP BY HOUR(`date`)
+ORDER BY COUNT(*) DESC
+LIMIT 1;
+
+# 20) Показать список всех персонажей, имеющий определенный предмет
+SELECT *
+FROM player
+WHERE player.id IN (
+	SELECT owner_id
+    FROM inventory
+    WHERE EXISTS (
+		SELECT *
+        FROM item_to_inventory
+        WHERE item_to_inventory.inventory_id = inventory.id AND item_to_inventory.item_id = (
+			SELECT item.id
+            FROM item
+            WHERE item.`name` = 'Potato'
+        )
+    )
+);
+
+# 21) Показать кол-во игроков, которые имеют предмет, и так для всех предметов
+SELECT item.`name` AS item_name, t.item_count
+FROM (
+	SELECT item_id, COUNT(*) AS item_count
+	FROM item_to_inventory
+	GROUP BY item_id
+) t
+JOIN item
+ON item.id = t.item_id;
+
+# 22) Показать сколько раз выполнили каждый из квестов
+SELECT quest.`name` AS quest_name, t.c AS count_complete
+FROM (
+	SELECT player_to_quest.quest_id AS a, COUNT(*) AS c
+	FROM player_to_quest 
+	GROUP BY player_to_quest.quest_id
+) t
+JOIN quest
+ON quest.id = t.a;
+
+
+# Группа запросов UPDATE с WHERE (5 шт)
+# 23) Изменение имени определенного клана
+UPDATE clan
+SET `name` = 'Stack of wolves'
+WHERE `name` = 'Pack of wolves';
+
+# 24) Задание кол-во опыта определенному игроку
+UPDATE player
+SET experience = 30
+WHERE `name` = 'Alkanoid';
+
+# 25) Перемещение определенного предмета из одного инвентаря в другой
+UPDATE item_to_inventory
+SET item_to_inventory.inventory_id = 3
+WHERE item_to_inventory.item_id = 4 AND item_to_inventory.inventory_id = 5;
+
+# 26) Переименование локации
+UPDATE map_location
+SET `name` = 'Rock lake'
+WHERE `name` = 'Glass lake';
+
+# 27) Изменение награды за квест
+UPDATE quest
+SET experience = 15
+WHERE `name` = 'Picking berries';
+
+# Группа запросов DELETE с WHERE (5 шт)
+# 28) Удалние аккаунта по адресу почты
+DELETE FROM `account` WHERE email = '1chillimilli5942@gmailni.com';
+
+# 29) Удалние клана по названию
+DELETE FROM `clan` WHERE `name` = 'Army of demons';
+
+# 30) Удалние игрока по имени
+DELETE FROM `player` WHERE `name` = 'Dragon';
+
+# 31) Удалние сервера по названию
+DELETE FROM `server` WHERE `name` = 'EU1';
+
+# 32) Удалние квеста по названию
+DELETE FROM `quest` WHERE `name` = 'A party';
+
+# Группа запросов SELECT, DISTINCT, WHERE, AND/OR/NOT, IN, BETWEEN, различная работа с датами и числами, преобразование данных, IS NULL, AS для таблиц и столбцов и др. (20 шт)
+# 33) Выборка игроков, у которых более 100 опыта
+SELECT *
+FROM player
+WHERE experience > 100;
+
+# 34) Выборка квестоув, за которые дают более 100 опыта
+SELECT *
+FROM quest
+WHERE experience > 100;
+
+
+# 35) Выборка заклинаний, которые наносят более 100 уровна
+SELECT *
+FROM spell
+WHERE damage > 100;
+
+
+# 36) Выборка квестов, которые были выполненны хоть раз
+SELECT *
+FROM quest
+WHERE id IN (SELECT quest_id FROM player_to_quest);
+
+
+# 37) Выборка квестов, которые ни разу не выполнялись
+SELECT *
+FROM quest
+WHERE id NOT IN (SELECT quest_id FROM player_to_quest);
+
+# 38) Выборка квестов, за которые дают от 50 до 200 опыта
+SELECT *
+FROM quest
+WHERE experience BETWEEN 50 AND 200;
+
+# 39) ВЫборка игроков от 2 до 4 уровня
+SELECT *
+FROM player
+WHERE `level` BETWEEN 2 AND 4;
+
+# 40) Выборка всех уровней игроков
+SELECT DISTINCT `level`
+FROM player;
+
+# 41) Обрезание времени из даты входа
+SELECT player_id AS player, DATE(`date`)
+FROM entry_datetime;
+
+# 42) Последняя дата входа любого игрока
+SELECT MAX(`date`) AS `date`
+FROM entry_datetime;
+
+# 43) Средний опыт, который дают за квесты
+SELECT AVG(experience) AS avg_experience
+FROM quest;
+
+# 44) Выборка инвентарей персонажей
+SELECT *
+FROM inventory
+WHERE location_id IS NULL;
+
+# 45) Выборка квестов без описания
+SELECT *
+FROM quest
+WHERE description IS NULL;
+
+# 46) Расчёт урона за каждую потраченную ману у каждого заклинания
+SELECT id, `name`, damage / mana_cost AS damage_per_mana
+FROM spell;
+
+# 47) Выборка заклинаний, наносящих урон
+SELECT *
+FROM spell
+WHERE NOT damage = 0;
+
+# 48) Выборка локаций, не принадлежащие кланам
+SELECT *
+FROM map_location
+WHERE owner_id IS NULL;
+
+# 49) Выборка локаций, принадлежащие кланам
+SELECT *
+FROM map_location
+WHERE owner_id IS NOT NULL;
+
+# 50) Выборка дорогой еды
+SELECT *
+FROM item
+WHERE type_id = 9 AND cost > 9;
+
+# 51) Выборка игроков в определенном клане
+SELECT *
+FROM player
+WHERE clan_id = 1;
+
+# 52) Средняя трата маны из всех заклинаний
+SELECT AVG(mana_cost) AS avg_mana_cost
+FROM spell;
+
+# 53) Выборка игроков с определенного сервера
+SELECT *
+FROM player
+WHERE server_id = 2;
+
+# Группа запросов LIKE и другая работа со строками (5 шт)
+# 54) Выборка аккаунтов с длинным паролем
+SELECT *
+FROM `account`
+WHERE LENGTH(`password`) > 5;
+
+# 55) Выборка игроков, которые начинаются с буквы D
+SELECT *
+FROM player
+WHERE `name` LIKE 'D%';
+
+# 56) Выборка русский серверов
+SELECT *
+FROM server
+WHERE `name` LIKE 'RU%';
+
+# 57) Выборка имен игроков
+SELECT SUBSTRING_INDEX(`name`, ' ', 1) AS first_name
+FROM player;
+
+# 58) Заменяет пробелы черточками в имени игрока
+SELECT REPLACE(`name`, ' ', '-') AS `name`
+FROM player;
+
+# Группа запросов JOIN: INNER, OUTER (LEFT, RIGHT, FULL), CROSS, NATURAL, разных, в различных вариациях, несколько запросов с более, чем одним JOIN (15 шт)
+# 59) Выводит имя владельца каждого клана
+SELECT clan.`name` AS clan_name, player.`name` AS owner_name
+FROM clan
+JOIN player
+ON player.id = clan.owner_id;
+
+# 60) Выводит имя клана, который владеет локацией
+SELECT map_location.`name` AS location_name, clan.`name` AS clan_name
+FROM map_location
+JOIN clan
+ON clan.id = map_location.owner_id;
+
+# 61) Выводит тип для каждого из предметов
+SELECT item.`name` AS item_name, item_type.`name` AS type_name
+FROM item
+JOIN item_type
+ON item_type.id = item.type_id;
+
+# 62) Выводит имя локации, на которой находятся игроки
+SELECT player.`name` AS player_name, map_location.`name` AS location_name
+FROM player
+LEFT JOIN map_location
+ON map_location.id = player.location_id;
+
+# 63) Выводит название сервера, на котором создан персонаж
+SELECT player.`name` AS player_name, `server`.`name` AS server_name, `account`.email
+FROM player
+CROSS JOIN `server` ON `server`.id = player.server_id;
+
+# 64) Выводит список инвентарей, с названием их владельцев и название локации где они находятся
+SELECT inventory.id, player.`name` AS player_name, map_location.`name` AS location_name
+FROM inventory
+LEFT JOIN player ON player.id = inventory.owner_id
+LEFT JOIN map_location ON map_location.id = inventory.location_id;
+
+# 65) Выводит у каких игроков какие есть заклинания
+SELECT player.`name` AS player_name, spell.`name` AS spell_name
+FROM spell_to_player
+LEFT JOIN player ON player.id = spell_to_player.player_id
+LEFT JOIN spell ON spell.id = spell_to_player.spell_id;
+
+# 66) Выводит у каких игроков какие есть питомцы
+SELECT player.`name` AS player_name, pet.`name` AS pet_name
+FROM pet_to_player
+LEFT JOIN player ON player.id = pet_to_player.player_id
+LEFT JOIN pet ON pet.id = pet_to_player.pet_id;
+
+# 67) Выводит у каких игроков выполнены какие квесты
+SELECT player.`name` AS player_name, quest.`name` AS quest_name
+FROM player_to_quest
+LEFT JOIN player ON player.id = player_to_quest.player_id
+LEFT JOIN quest ON quest.id = player_to_quest.quest_id;
+
+# 68) Выводит какие предметы можно получить за квесты
+SELECT quest.`name` AS quest_name, item.`name` AS item_name
+FROM quest_to_item
+LEFT JOIN quest ON quest.id = quest_to_item.quest_id
+LEFT JOIN item ON item.id = quest_to_item.item_id;
+
+# 69) Выводит какие предметы лежат в каком инвентаре, и сколько
+SELECT inventory.id AS inventory_id, item.`name` AS item_name, item_to_inventory.`count`
+FROM item_to_inventory
+LEFT JOIN inventory ON inventory.id = item_to_inventory.inventory_id
+LEFT JOIN item ON item.id = item_to_inventory.item_id;
+
+# 70) Выводит email аккаунта персонажа
+SELECT player.id, player.`name`, `account`.email
+FROM player
+LEFT JOIN `account` 
+ON `account`.id = player.account_id;
+
+# 71) Выводит password аккаунта персонажа
+SELECT player.id, player.`name`, `account`.`password`
+FROM player
+LEFT JOIN `account` 
+ON `account`.id = player.account_id;
+
+# 72) Выводит клан, в котором состоит игрок
+SELECT player.id, player.`name`, clan.`name`
+FROM player
+LEFT JOIN clan 
+ON clan.id = player.clan_id;
+
+# 73) Выводит всю информацию о игроке
+SELECT player.id, player.`name`, player.experience, player.`level`,
+		clan.`name` AS clan_name, map_location.`name` AS location_name, 
+        `account`.email AS account_name, `server`.`name` AS server_name
+FROM player
+LEFT JOIN clan ON clan.id = player.clan_id
+LEFT JOIN map_location ON map_location.id = player.location_id
+LEFT JOIN `account` ON `account`.id = player.account_id
+LEFT JOIN `server` ON `server`.id = player.server_id;
+
+
+# Группа запросов GROUP BY (некоторые с HAVING), с LIMIT, ORDER BY (ASC|DESC) вместе с COUNT, MAX, MIN, SUM, AVG в различных вариациях, можно по отдельности (15 шт)
+# 74) Кол-во питомцев у игроков
+SELECT pet.`name` AS pet_name, t.pet_count
+FROM (
+	SELECT pet_id, COUNT(*) AS pet_count
+	FROM pet_to_player
+	GROUP BY pet_id
+) t
+JOIN pet
+ON pet.id = t.pet_id;
+
+# 75) Какой квест сколько раз выполнили
+SELECT quest.`name` AS quest_name, t.quest_count
+FROM (
+	SELECT quest_id, COUNT(*) AS quest_count
+	FROM player_to_quest
+	GROUP BY quest_id
+) t
+JOIN quest
+ON quest.id = t.quest_id; 
+
+# 76) У скольки игроков есть каждое заклинание
+SELECT spell.`name` AS spell_name, t.spell_count
+FROM (
+	SELECT spell_id, COUNT(*) AS spell_count
+	FROM spell_to_player
+	GROUP BY spell_id
+) t
+JOIN spell
+ON spell.id = t.spell_id; 
+
+# 77) У скольки игроков есть каждое заклинание с уроном больше 0
+SELECT spell.`name` AS spell_name, t.spell_count
+FROM (
+	SELECT spell_id, COUNT(*) AS spell_count
+	FROM spell_to_player
+	GROUP BY spell_id
+    HAVING (
+		SELECT spell.damage 
+        FROM spell 
+        WHERE spell.id = spell_to_player.spell_id
+	) > 0
+) t
+JOIN spell
+ON spell.id = t.spell_id; 
+
+# 78) Самое распространенное заклинание
+SELECT spell.`name` AS spell_name, t.spell_count
+FROM (
+	SELECT spell_id, COUNT(*) AS spell_count
+	FROM spell_to_player
+	GROUP BY spell_id
+) t
+JOIN spell
+ON spell.id = t.spell_id
+ORDER BY t.spell_count DESC
+LIMIT 1;
+
+# 79) Самый редкий питомец
+SELECT pet.`name` AS pet_name, t.pet_count
+FROM (
+	SELECT pet_id, COUNT(*) AS pet_count
+	FROM pet_to_player
+	GROUP BY pet_id
+) t
+JOIN pet
+ON pet.id = t.pet_id
+ORDER BY t.pet_count
+LIMIT 1;
+
+# 80) Среднее кол-во питомцев у игроков
+SELECT AVG(t.pet_count) AS avg_pet_count
+FROM (
+	SELECT pet_id, COUNT(*) AS pet_count
+	FROM pet_to_player
+	GROUP BY pet_id
+) t;
+
+# 81) Максимальное кол-во заклинаний среди игр
+SELECT MAX(t.spell_count) AS max_spell_count
+FROM (
+	SELECT spell_id, COUNT(*) AS spell_count
+	FROM spell_to_player
+	GROUP BY spell_id
+) t;
+
+# 82) Кол-во предметов в инвентарях персонажей
+SELECT player.`name`, COALESCE(t.item_count, 0) AS item_count
+FROM player
+LEFT JOIN (
+	SELECT inventory_id, SUM(`count`) AS item_count
+	FROM item_to_inventory
+	GROUP BY inventory_id
+) t
+ON t.inventory_id IN (
+	SELECT id
+	FROM inventory
+	WHERE owner_id = player.id AND location_id IS NULL
+);
+
+# 83) Среднее кол-во предмнетов у персонажей
+SELECT AVG(COALESCE(t.item_count, 0)) AS item_count
+FROM player
+LEFT JOIN (
+	SELECT inventory_id, SUM(`count`) AS item_count
+	FROM item_to_inventory
+	GROUP BY inventory_id
+) t
+ON t.inventory_id IN (
+	SELECT id
+	FROM inventory
+	WHERE owner_id = player.id AND location_id IS NULL
+);
+
+# 84) Максимальное кол-во предмнетов у персонажей
+SELECT MAX(COALESCE(t.item_count, 0)) AS item_count
+FROM player
+LEFT JOIN (
+	SELECT inventory_id, SUM(`count`) AS item_count
+	FROM item_to_inventory
+	GROUP BY inventory_id
+) t
+ON t.inventory_id IN (
+	SELECT id
+	FROM inventory
+	WHERE owner_id = player.id AND location_id IS NULL
+);
+
+# 85) Самый выполняемый квест
+SELECT quest.`name` AS quest_name, MAX(t.quest_count) AS complete_count
+FROM (
+	SELECT quest_id, COUNT(*) AS quest_count
+	FROM player_to_quest
+	GROUP BY quest_id
+) t
+JOIN quest
+ON quest.id = t.quest_id; 
+
+# 86) Самый не выполняемый квест
+SELECT quest.`name` AS quest_name, MIN(t.quest_count)
+FROM (
+	SELECT quest_id, COUNT(*) AS quest_count
+	FROM player_to_quest
+	GROUP BY quest_id
+) t
+JOIN quest
+ON quest.id = t.quest_id; 
+
+# 87) Сколько всего выполнили квестов игроки
+SELECT SUM(t.quest_count) AS quest_count
+FROM (
+	SELECT quest_id, COUNT(*) AS quest_count
+	FROM player_to_quest
+	GROUP BY quest_id
+) t
+JOIN quest
+ON quest.id = t.quest_id; 
+
+# 88) Сколько всего питомцев у всех игроков
+SELECT SUM(t.pet_count) AS pet_count
+FROM (
+	SELECT pet_id, COUNT(*) AS pet_count
+	FROM pet_to_player
+	GROUP BY pet_id
+) t
+JOIN pet
+ON pet.id = t.pet_id;
+
+# Группа запросов UNION, EXCEPT, INTERSECT (3 шт)
+# 89) Названия кланов и игроков
+SELECT player.`name`
+FROM player
+UNION (SELECT clan.`name` FROM clan);
+
+# 90) Все игроки, кроме тех, у кого 1 уровень
+SELECT *
+FROM player
+EXCEPT (SELECT * FROM player WHERE player.`level` = 0);
+
+# 91) Все игроки у кого 1 уровень
+SELECT *
+FROM player
+INTERSECT (SELECT * FROM player WHERE player.`level` = 0);
+
+# Группа запросов Вложенные SELECT с ALL, ANY, EXISTS (3 шт)
+# 92) Возвращает игроков у которых есть питомец
+SELECT *
+FROM player
+WHERE player.id = ANY (
+	SELECT player_id
+    FROM pet_to_player 
+);
+
+# 93) Возвращает всех игроков
+SELECT *
+FROM player
+WHERE player.id = ALL (
+	SELECT player_id
+    FROM spell_to_player
+    WHERE player.id = spell_to_player.player_id
+);
+
+# 94) Возвращает игроков, которые имеют питомцев
+SELECT *
+FROM player
+WHERE EXISTS (
+	SELECT player_id
+    FROM pet_to_player
+    WHERE pet_to_player.player_id = player.id
+);
+
+# Группа запросов GROUP_CONCAT (2 шт)
+# 95) Список имен игроков через разделитель
+SELECT GROUP_CONCAT(player.`name`) AS player_list
+FROM player;
+
+# 96) Список предметов через разделитель
+SELECT GROUP_CONCAT(item.`name`) AS item_list
+FROM item;
+
+# Группа запросов Сложные запросы, входящие в большинство групп выше, т.е. SELECT ... JOIN ... JOIN ... WHERE ... GROUP BY ... ORDER BY ... LIMIT ... (4 шт)
+# 97) Самый выполняемый квест
+SELECT quest.`name` AS quest_name, t.quest_count
+FROM (
+	SELECT quest_id, COUNT(*) AS quest_count
+	FROM player_to_quest
+	GROUP BY quest_id
+) t
+JOIN quest
+ON quest.id = t.quest_id
+ORDER BY t.quest_count DESC 
+LIMIT 1;
+
+# 98) Среднее кол-во квестов, которые выполняет игрок
+SELECT AVG(t.quest_count) AS avg_quest_count
+FROM (
+	SELECT quest_id, COUNT(*) AS quest_count
+	FROM player_to_quest
+	GROUP BY quest_id
+) t
+JOIN quest
+ON quest.id = t.quest_id;
+
+# 99) Самый популярный сервер
+SELECT `server`.`name` AS server_name, t.player_count
+FROM (
+	SELECT server_id, COUNT(*) AS player_count
+	FROM player
+	GROUP BY `server_id`
+) t
+JOIN `server`
+ON `server`.id = t.server_id
+ORDER BY t.player_count DESC 
+LIMIT 1;
+
+# 100) Среднее кол-во игроков на сервере
+SELECT AVG(COALESCE(t.player_count, 0)) AS player_count
+FROM (
+	SELECT server_id, COUNT(*) AS player_count
+	FROM player
+	GROUP BY `server_id`
+) t
+RIGHT JOIN `server`
+ON `server`.id = t.server_id;
