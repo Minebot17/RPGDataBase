@@ -49,17 +49,10 @@ FROM player;
 # 12) Показать все предметы конкретного персонажа
 SELECT item.*, item_to_inventory.`count`
 FROM item_to_inventory
-JOIN item
-ON item.id = item_to_inventory.item_id
-WHERE item_to_inventory.inventory_id = (
-	SELECT inventory.id 
-    FROM inventory 
-    WHERE inventory.owner_id = (
-		SELECT player.id
-        FROM player
-        WHERE player.`name` = 'Smokin Gun'
-    )
-);
+LEFT JOIN item ON item.id = item_to_inventory.item_id
+LEFT JOIN inventory ON inventory.id = item_to_inventory.inventory_id
+LEFT JOIN player ON inventory.owner_id = player.id
+WHERE player.`name` = 'Smokin Gun';
 
 # 13) Показать список не выполненных квестов персонажа
 SELECT *
@@ -67,11 +60,8 @@ FROM quest
 WHERE quest.id NOT IN (
 	SELECT player_to_quest.quest_id
     FROM player_to_quest
-    WHERE player_to_quest.player_id = (
-		SELECT player.id
-        FROM player
-        WHERE player.`name` = 'HarpyWitch'
-    )
+    LEFT JOIN player ON player.id = player_to_quest.player_id
+    WHERE player.`name` = 'HarpyWitch'
 );
 
 # 14) Показать дату и время всех входов в игру пользователя
@@ -82,35 +72,23 @@ ON player.id = entry_datetime.player_id
 WHERE player.`name` = 'MusicMiss';
 
 # 15) Показать список всех персонажей пользователя
-SELECT *
+SELECT player.*
 FROM player
-WHERE player.account_id = (
-	SELECT `account`.id
-    FROM `account`
-    WHERE `account`.email = '1mudo.redaa@kentel.buzz'
-);
+LEFT JOIN `account` ON `account`.id = player.account_id
+WHERE `account`.email = '1mudo.redaa@kentel.buzz';
 
 # 16) Показать всех персонажей в клане
-SELECT *
+SELECT player.*
 FROM player
-WHERE player.clan_id = (
-	SELECT clan.id
-    FROM clan
-    WHERE clan.`name` = 'Pack of wolves'
-);
+LEFT JOIN clan ON clan.id = player.clan_id
+WHERE clan.`name` = 'Pack of wolves';
 
 # 17) Показать все кланы на сервере
-SELECT *
+SELECT clan.*
 FROM clan
-WHERE clan.owner_id IN (
-	SELECT player.id
-    FROM player
-    WHERE player.server_id = (
-		SELECT `server`.id
-        FROM `server`
-        WHERE `server`.`name` = 'RU0'
-    )
-);
+LEFT JOIN player ON player.id = clan.owner_id
+LEFT JOIN `server` ON `server`.id = player.server_id
+WHERE `server`.`name` = 'RU0';
 
 # 18) Показать средний уровень всех персонажей в игре
 SELECT AVG(`level`) AS avg_level
@@ -689,3 +667,48 @@ FROM (
 ) t
 RIGHT JOIN `server`
 ON `server`.id = t.server_id;
+
+# Команды модификации
+#1) Топ 5 игроков по максимальному дамагу в определенном клане
+SELECT player.`name`, COALESCE(max_damages.max_damage, 0) AS max_damage
+FROM player
+LEFT JOIN (
+	SELECT player_id, MAX(spell.damage) AS max_damage
+    FROM spell_to_player
+    LEFT JOIN spell ON spell_to_player.spell_id = spell.id
+    GROUP BY spell_to_player.player_id
+) max_damages ON max_damages.player_id = player.id
+LEFT JOIN clan ON clan.id = player.clan_id
+WHERE clan.`name` = "Pack of wolves"
+ORDER BY max_damages.max_damage DESC
+LIMIT 5;
+
+#2) Самый популярный предмет определенного типа
+SELECT item.`name`, popular_count.`count`
+FROM item
+LEFT JOIN (
+	SELECT item_id, COUNT(*) AS `count`
+    FROM item_to_inventory
+    GROUP BY item_id
+) popular_count ON popular_count.item_id = item.id
+ORDER BY popular_count.`count` DESC
+LIMIT 1;
+
+#3) Суммарная стоимость предметов в инвентарях игроков чей уровень от 5 до 10
+SELECT player.`name`, total_cost.cost
+FROM player
+LEFT JOIN (
+	SELECT owner_id, COALESCE(SUM(inv_cost.cost), 0) AS cost
+    FROM inventory
+    LEFT JOIN (
+		SELECT inventory_id, SUM(item.cost) AS cost
+        FROM item_to_inventory
+        LEFT JOIN item ON item.id = item_to_inventory.item_id
+        GROUP BY inventory_id
+    ) inv_cost ON inv_cost.inventory_id = inventory.id
+    GROUP BY owner_id
+) total_cost ON total_cost.owner_id = player.id
+WHERE player.`level` BETWEEN 5 AND 10
+ORDER BY total_cost.cost DESC;
+
+
