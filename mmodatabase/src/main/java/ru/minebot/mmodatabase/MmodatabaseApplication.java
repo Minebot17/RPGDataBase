@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 @SpringBootApplication
@@ -34,11 +34,26 @@ public class MmodatabaseApplication {
 	public String getTables() throws JsonProcessingException {
 		List<String> tables = jdbcTemplate.query(
 				"SELECT `TABLE_NAME` \n" +
-				"FROM information_schema.tables\n" +
-				"WHERE TABLE_SCHEMA = 'mmo';",
+					"FROM information_schema.tables\n" +
+					"WHERE TABLE_SCHEMA = 'mmo'\n" +
+					"\tAND TABLE_TYPE = 'BASE TABLE';",
 				(rs, rowNum) -> rs.getString(1)
 		);
 
 		return mapper.writeValueAsString(tables);
+	}
+
+	@CrossOrigin(origins = "http://127.0.0.1:8080")
+	@PostMapping(value = "/api/getColums")
+	public String getColums(@RequestBody String body) throws JsonProcessingException {
+		List<String> columns = jdbcTemplate.query(
+				"SELECT COLUMN_NAME\n" +
+					"FROM INFORMATION_SCHEMA.COLUMNS\n" +
+					"WHERE TABLE_SCHEMA = 'mmo' \n" +
+					"AND TABLE_NAME = '" + mapper.readValue(body, mapper.constructType(String.class)) + "';",
+
+				(rs, rowNum) -> rs.getString(1)
+		);
+		return mapper.writeValueAsString(columns);
 	}
 }

@@ -6,17 +6,17 @@ import '../css/ChangePage.scss'
 import {Button, Form} from 'react-bootstrap';
 import history from "../history.jsx";
 import SelectTableComponent from "./SelectTableComponent.jsx";
+import NewElementComponent from "./NewElementComponent.jsx";
 
 function ChangePage(props){
+    let selectedTable = props.changeState.selectedTable
+
     return (
         <div>
             <SelectTableComponent dbList={props.dbList} changeState={props.changeState} setChangeState={props.setChangeState} />
-            {(props.changeState.selectedTable != null ?
+            {(selectedTable != null ?
                     <div>
-                        <Form>
-                            <Form.Label>Добавить новый элемент:</Form.Label>
-
-                        </Form>
+                        <NewElementComponent changeState={props.changeState} setChangeState={props.setChangeState} />
                     </div>
                 :
                     <div></div>
