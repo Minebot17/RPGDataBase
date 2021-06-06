@@ -19,8 +19,22 @@ function NewElementComponent(props){
         setColumnsText(text);
     };
 
+    let onAddClick = () => {
+        fetch("http://127.0.0.1:1234/api/addRow", {
+            method: "POST",
+            body: JSON.stringify({ tableName: selectedTable, tableKeys: columnsName, tableValues: columnsText }),
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(res => res.json())
+            .then(result => {
+                console.log(result)
+            }, error => {
+                console.log(error);
+            })
+    };
+
     if (selectedTable !== loadedTable){
-        fetch("http://127.0.0.1:1234/api/getColums", {
+        fetch("http://127.0.0.1:1234/api/getColumns", {
             method: "POST",
             body: JSON.stringify(selectedTable),
             headers: { 'Content-Type': 'application/json' }
@@ -52,7 +66,7 @@ function NewElementComponent(props){
                     </Form.Group>
                 )
             }
-            <Button>Добавить</Button>
+            <Button onClick={onAddClick}>Добавить</Button>
         </Form>
     );
 }
