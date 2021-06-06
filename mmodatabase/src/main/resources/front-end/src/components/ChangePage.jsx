@@ -10,6 +10,8 @@ import NewElementComponent from "./NewElementComponent.jsx";
 import ChangeTableComponent from "./ChangeTableComponent.jsx";
 
 function ChangePage(props){
+    const [loadedTableTable, setLoadedTableTable] = useState(null);
+
     let selectedTable = props.changeState.selectedTable
 
     return (
@@ -18,9 +20,9 @@ function ChangePage(props){
             {(selectedTable != null ?
                     <div>
                         <br />
-                        <NewElementComponent changeState={props.changeState} setChangeState={props.setChangeState} />
+                        <NewElementComponent changeState={props.changeState} setChangeState={props.setChangeState} setLoadedTableTable={setLoadedTableTable} />
                         <br />
-                        <ChangeTableComponent changeState={props.changeState} setChangeState={props.setChangeState} />
+                        <ChangeTableComponent changeState={props.changeState} setChangeState={props.setChangeState} loadedTableTable={loadedTableTable} setLoadedTableTable={setLoadedTableTable} />
                     </div>
                 :
                     <div></div>

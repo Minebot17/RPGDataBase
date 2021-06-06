@@ -3,13 +3,14 @@ import React, { useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../css/NewElementComponent.scss'
-import {Button, Form} from 'react-bootstrap';
+import {Button, Form, OverlayTrigger, Popover} from 'react-bootstrap';
 import history from "../history.jsx";
 
 function NewElementComponent(props){
     const [loadedTable, setLoadedTable] = useState(null);
     const [columnsName, setColumnsName] = useState([]);
     const [columnsText, setColumnsText] = useState();
+    const [popoverShow, setPopoverShow] = useState(0);
 
     let selectedTable = props.changeState.selectedTable;
 
@@ -27,7 +28,16 @@ function NewElementComponent(props){
         })
             .then(res => res.json())
             .then(result => {
-                console.log(result)
+                if (result.status === 500){
+                    setPopoverShow(2);
+                    setTimeout(() => setPopoverShow(0), 2000);
+                    return;
+                }
+
+                props.setLoadedTableTable(null);
+                setLoadedTable(null);
+                setPopoverShow(1);
+                setTimeout(() => setPopoverShow(0), 2000);
             }, error => {
                 console.log(error);
             })
@@ -41,6 +51,10 @@ function NewElementComponent(props){
         })
             .then(res => res.json())
             .then(result => {
+                let idIndex = result.indexOf("id");
+                if (idIndex !== -1)
+                    result.splice(idIndex, 1);
+
                 let toColumnsText = [];
                 for (var i = 0; i < result.length; i++){
                     toColumnsText.push("");
@@ -54,6 +68,21 @@ function NewElementComponent(props){
             })
     }
 
+    let popoverOk = (
+        <Popover id="popover-basic">
+            <Popover.Title as="h3">Элемент добавлен</Popover.Title>
+        </Popover>
+    );
+
+    let popoverError = (
+        <Popover id="popover-basic">
+            <Popover.Title as="h3">Ошибка добавления</Popover.Title>
+            <Popover.Content>
+                Проверьте, что введеные id существуют в БД, и данные корректны.
+            </Popover.Content>
+        </Popover>
+    );
+
     return (
         <Form>
             <Form.Label>Добавить новый элемент:</Form.Label>
@@ -66,7 +95,9 @@ function NewElementComponent(props){
                     </Form.Group>
                 )
             }
-            <Button onClick={onAddClick}>Добавить</Button>
+            <OverlayTrigger show={popoverShow !== 0} placement="right" overlay={popoverShow === 2 ? popoverError : popoverOk}>
+                <Button onClick={onAddClick}>Добавить</Button>
+            </OverlayTrigger>
         </Form>
     );
 }

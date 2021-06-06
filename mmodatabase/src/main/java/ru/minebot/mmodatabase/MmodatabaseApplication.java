@@ -8,10 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 @SpringBootApplication
@@ -65,13 +64,51 @@ public class MmodatabaseApplication {
 
 	@CrossOrigin(origins = "http://127.0.0.1:8080")
 	@PostMapping(value = "/api/addRow")
-	public int getTableRows(@RequestParam String tableName, @RequestParam List<String> tableKeys, @RequestParam List<String> tableValues) {
+	public int addRow(@RequestBody Map<String, Object> body) {
+		String tableName = (String) body.get("tableName");
+		ArrayList<String> tableKeys = (ArrayList<String>) body.get("tableKeys");
+		ArrayList<String> tableValues = (ArrayList<String>) body.get("tableValues");
+
 		int idIndex = tableKeys.indexOf("id");
 		if (idIndex != -1){
 			tableKeys.remove(idIndex);
 			tableValues.remove(idIndex);
 		}
 
-		return jdbcTemplate.update(String.format("INSERT %s (%s) VALUES (%s)", tableName, String.join(",", tableKeys), String.join(",", tableValues)));
+		return jdbcTemplate.update(String.format("INSERT %s (%s) VALUES ('%s')", tableName, String.join(",", tableKeys), String.join("','", tableValues)));
+	}
+
+	@CrossOrigin(origins = "http://127.0.0.1:8080")
+	@PostMapping(value = "/api/removeRow")
+	public int removeRow(@RequestBody Map<String, Object> body) {
+		String tableName = (String) body.get("tableName");
+		ArrayList<String> tableKeys = (ArrayList<String>) body.get("tableKeys");
+		ArrayList<Object> tableValues = (ArrayList<Object>) body.get("tableValues");
+
+		StringBuilder builder = new StringBuilder("DELETE FROM " + tableName + " WHERE ");
+		for (int i = 0; i < tableKeys.size(); i++)
+			builder.append("`").append(tableKeys.get(i)).append("`").append(" = ").append("'").append(tableValues.get(i).toString()).append("'").append(i == tableKeys.size() - 1 ? ";" : " AND ");
+
+		return jdbcTemplate.update(builder.toString());
+	}
+
+	@CrossOrigin(origins = "http://127.0.0.1:8080")
+	@PostMapping(value = "/api/editRow")
+	public int editRow(@RequestBody Map<String, Object> body) {
+		String tableName = (String) body.get("tableName");
+		ArrayList<String> tableKeys = (ArrayList<String>) body.get("tableKeys");
+		ArrayList<Object> oldValues = (ArrayList<Object>) body.get("oldValues");
+		ArrayList<Object> newValues = (ArrayList<Object>) body.get("newValues");
+
+		StringBuilder builder = new StringBuilder("UPDATE " + tableName + " SET ");
+		for (int i = 0; i < tableKeys.size(); i++){
+			builder.append("`").append(tableKeys.get(i)).append("`").append(" = ").append("'").append(newValues.get(i).toString()).append("'").append(i == tableKeys.size() - 1 ? " " : ", ");
+		}
+
+		builder.append("WHERE ");
+		for (int i = 0; i < tableKeys.size(); i++)
+			builder.append("`").append(tableKeys.get(i)).append("`").append(" = ").append("'").append(oldValues.get(i).toString()).append("'").append(i == tableKeys.size() - 1 ? ";" : " AND ");
+
+		return jdbcTemplate.update(builder.toString());
 	}
 }
