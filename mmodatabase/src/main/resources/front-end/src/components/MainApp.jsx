@@ -8,6 +8,7 @@ import { Button, Nav, Navbar, Form } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { AnimatedSwitch } from 'react-router-transition';
 import ChangePage from "./ChangePage.jsx";
+import ViewPage from "./ViewPage.jsx";
 
 function MainApp(){
 
@@ -20,6 +21,7 @@ function MainApp(){
 
     const [dbList, setDbList] = useState([]);
     const [changeState, setChangeState] = useState({ selectedTable: null });
+    const [viewState, setViewState] = useState({ selectedTable: null });
 
     if (dbList.length === 0){
         fetch("http://127.0.0.1:1234/api/getTables")
@@ -41,7 +43,7 @@ function MainApp(){
             </header>
             <main>
                 <Route path="/view">
-
+                    <ViewPage dbList={dbList} viewState={viewState} setViewState={setViewState} />
                 </Route>
                 <Route path="/change">
                     <ChangePage dbList={dbList} changeState={changeState} setChangeState={setChangeState} />

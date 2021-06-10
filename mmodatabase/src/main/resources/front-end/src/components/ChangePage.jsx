@@ -16,7 +16,7 @@ function ChangePage(props){
 
     return (
         <div>
-            <SelectTableComponent dbList={props.dbList} changeState={props.changeState} setChangeState={props.setChangeState} />
+            <SelectTableComponent dbList={props.dbList} state={props.changeState} setState={props.setChangeState} />
             {(selectedTable != null ?
                     <div>
                         <br />

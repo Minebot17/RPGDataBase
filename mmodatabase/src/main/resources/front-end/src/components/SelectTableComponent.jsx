@@ -7,16 +7,16 @@ import {Button, Form} from 'react-bootstrap';
 import history from "../history.jsx";
 
 function SelectTableComponent(props){
-    let selectedTable = props.changeState.selectedTable;
+    let selectedTable = props.state.selectedTable;
 
     if (props.dbList.length !== 0 && selectedTable == null)
-        props.setChangeState({ selectedTable: props.dbList[0] });
+        props.setState({ selectedTable: props.dbList[0] });
 
     return (
         <Form>
             <Form.Label>Выберите таблицу:</Form.Label>
             <Form.Control as="select" value={selectedTable}
-                          onChange={(ev) => props.setChangeState({ selectedTable: ev.target.value })}>
+                          onChange={(ev) => props.setState({ selectedTable: ev.target.value })}>
                 {
                     props.dbList.map((obj, i) =>
                         <option>
