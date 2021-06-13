@@ -9,6 +9,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 import { AnimatedSwitch } from 'react-router-transition';
 import ChangePage from "./ChangePage.jsx";
 import ViewPage from "./ViewPage.jsx";
+import AnalyticsPage from "./AnalyticsPage.jsx";
 
 function MainApp(){
 
@@ -49,7 +50,7 @@ function MainApp(){
                     <ChangePage dbList={dbList} changeState={changeState} setChangeState={setChangeState} />
                 </Route>
                 <Route path="/analytics">
-
+                    <AnalyticsPage />
                 </Route>
             </main>
         </Router>

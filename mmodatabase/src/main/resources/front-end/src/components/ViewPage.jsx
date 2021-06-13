@@ -16,7 +16,7 @@ function ViewPage(props){
             <SelectTableComponent dbList={props.dbList} state={props.viewState} setState={props.setViewState} />
             {(selectedTable != null ?
                     <div>
-                        <ViewTableComponent viewState={props.viewState} setViewState={props.setViewState} />
+                        <ViewTableComponent state={props.viewState} setState={props.setViewState} />
                     </div>
                     :
                     <div></div>

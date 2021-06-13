@@ -7,7 +7,7 @@ import {Button, Form, Table} from 'react-bootstrap';
 import history from "../history.jsx";
 
 function ViewTableComponent(props){
-    let selectedTable = props.viewState.selectedTable
+    let selectedTable = props.state.selectedTable
     const [loadedTable, setLoadedTable] = useState(null);
     const [columnsData, setColumnsData] = useState([]);
     const [columnsExclude, setColumnsExclude] = useState([]);

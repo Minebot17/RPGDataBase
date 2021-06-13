@@ -22,6 +22,33 @@ public class MmodatabaseApplication {
 
 	private final ObjectMapper mapper;
 
+	private final List<Map<String, Object>> queries = new ArrayList<>() {{
+		add(new HashMap<String, Object>() {{
+			put("queryId", 0);
+			put("queryDescription", "Показать все предметы конкретного персонажа");
+			put("queryBody", "SELECT item.id, item.`name`, item.cost, item_type.`name` AS type_name, item_to_inventory.`count`\n" +
+					"FROM item_to_inventory\n" +
+					"LEFT JOIN item ON item.id = item_to_inventory.item_id\n" +
+					"LEFT JOIN inventory ON inventory.id = item_to_inventory.inventory_id\n" +
+					"LEFT JOIN player ON inventory.owner_id = player.id\n" +
+					"LEFT JOIN item_type ON item_type.id = item.type_id\n" +
+					"WHERE player.`name` = '%s';");
+			put("queryParametersNames", new ArrayList<>(){{ add("player name"); }});
+		}});
+		add(new HashMap<String, Object>() {{
+			put("queryId", 1);
+			put("queryDescription", "Показать всех персонажей в клане");
+			put("queryBody", "SELECT player.id, player.`name`, player.experience, player.`level`, map_location.`name` AS map_location,  `account`.email AS account_email, `account`.`password` AS account_password, `server`.`name` AS server_name, `server`.location AS server_location\n" +
+					"FROM player\n" +
+					"LEFT JOIN clan ON clan.id = player.clan_id\n" +
+					"LEFT JOIN map_location ON map_location.id = player.location_id\n" +
+					"LEFT JOIN `account` ON `account`.id = player.account_id\n" +
+					"LEFT JOIN `server` ON `server`.id = player.server_id\n" +
+					"WHERE clan.`name` = '%s';");
+			put("queryParametersNames", new ArrayList<>(){{ add("clan name"); }});
+		}});
+	}};
+
 	public MmodatabaseApplication(ObjectMapper mapper) {
 		this.mapper = mapper;
 	}
@@ -132,6 +159,21 @@ public class MmodatabaseApplication {
 		query.append(";");
 		List<Map<String, Object>> result = jdbcTemplate.queryForList(query.toString());
 		return new HashMap<>() {{ put("data", result); put("fk", fkColumns); }};
+	}
+
+	@CrossOrigin(origins = "http://127.0.0.1:8080")
+	@PostMapping(value = "/api/getQueriesList")
+	public List<Map<String, Object>> getQueriesListHandle() {
+		return queries;
+	}
+
+	@CrossOrigin(origins = "http://127.0.0.1:8080")
+	@PostMapping(value = "/api/getQueryResult")
+	public List<Map<String, Object>> getQueryResultHandle(@RequestBody Map<String, Object> body) {
+		int queryId = (Integer) body.get("queryId");
+		List<String> queryParameters = (List<String>) body.get("queryParameters");
+
+		return jdbcTemplate.queryForList(String.format(queries.stream().filter(q -> (int) q.get("queryId") == queryId).findFirst().get().get("queryBody").toString(), queryParameters.toArray()));
 	}
 
 	private List<String> getColumns(String tableName){
