@@ -21,7 +21,7 @@ function NewElementComponent(props){
     };
 
     let onAddClick = () => {
-        fetch("http://127.0.0.1:1234/api/addRow", {
+        fetch("/api/addRow", {
             method: "POST",
             body: JSON.stringify({ tableName: selectedTable, tableKeys: columnsName, tableValues: columnsText }),
             headers: { 'Content-Type': 'application/json' }
@@ -44,7 +44,7 @@ function NewElementComponent(props){
     };
 
     if (selectedTable !== loadedTable){
-        fetch("http://127.0.0.1:1234/api/getColumns", {
+        fetch("/api/getColumns", {
             method: "POST",
             body: JSON.stringify(selectedTable),
             headers: { 'Content-Type': 'application/json' }

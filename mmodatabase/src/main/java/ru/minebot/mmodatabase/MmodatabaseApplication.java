@@ -57,7 +57,6 @@ public class MmodatabaseApplication {
 		SpringApplication.run(MmodatabaseApplication.class, args);
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8080")
 	@RequestMapping(value = "/api/getTables")
 	public String getTablesHandle() throws JsonProcessingException {
 		List<String> tables = jdbcTemplate.query(
@@ -71,19 +70,16 @@ public class MmodatabaseApplication {
 		return mapper.writeValueAsString(tables);
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8080")
 	@PostMapping(value = "/api/getColumns")
 	public List<String> getColumnsHandle(@RequestBody String body) throws JsonProcessingException {
 		return getColumns(mapper.readValue(body, mapper.constructType(String.class)));
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8080")
 	@PostMapping(value = "/api/getTableRows")
 	public List<Map<String, Object>> getTableRowsHandle(@RequestBody String body) throws JsonProcessingException {
 		return jdbcTemplate.queryForList("SELECT * FROM " + mapper.readValue(body, mapper.constructType(String.class)) + ";");
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8080")
 	@PostMapping(value = "/api/addRow")
 	public int addRowHandle(@RequestBody Map<String, Object> body) {
 		String tableName = (String) body.get("tableName");
@@ -99,7 +95,6 @@ public class MmodatabaseApplication {
 		return jdbcTemplate.update(String.format("INSERT %s (%s) VALUES ('%s')", tableName, String.join(",", tableKeys), String.join("','", tableValues)));
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8080")
 	@PostMapping(value = "/api/removeRow")
 	public int removeRowHandle(@RequestBody Map<String, Object> body) {
 		String tableName = (String) body.get("tableName");
@@ -113,7 +108,6 @@ public class MmodatabaseApplication {
 		return jdbcTemplate.update(builder.toString());
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8080")
 	@PostMapping(value = "/api/editRow")
 	public int editRowHandle(@RequestBody Map<String, Object> body) {
 		String tableName = (String) body.get("tableName");
@@ -133,7 +127,6 @@ public class MmodatabaseApplication {
 		return jdbcTemplate.update(builder.toString());
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8080")
 	@PostMapping(value = "/api/getJoinedTable")
 	public Map<String, Object> getJoinedTableHandle(@RequestBody String body) throws JsonProcessingException {
 		String tableName = mapper.readValue(body, mapper.constructType(String.class));
@@ -161,13 +154,11 @@ public class MmodatabaseApplication {
 		return new HashMap<>() {{ put("data", result); put("fk", fkColumns); }};
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8080")
 	@PostMapping(value = "/api/getQueriesList")
 	public List<Map<String, Object>> getQueriesListHandle() {
 		return queries;
 	}
 
-	@CrossOrigin(origins = "http://127.0.0.1:8080")
 	@PostMapping(value = "/api/getQueryResult")
 	public List<Map<String, Object>> getQueryResultHandle(@RequestBody Map<String, Object> body) {
 		int queryId = (Integer) body.get("queryId");

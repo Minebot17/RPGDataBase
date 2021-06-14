@@ -13,8 +13,9 @@ function ViewTableComponent(props){
     const [columnsExclude, setColumnsExclude] = useState([]);
 
     if (selectedTable !== loadedTable){
-        fetch("http://127.0.0.1:1234/api/getJoinedTable", {
+        fetch("/api/getJoinedTable", {
             method: "POST",
+            mode:'no-cors',
             body: JSON.stringify(selectedTable),
             headers: { 'Content-Type': 'application/json' }
         })

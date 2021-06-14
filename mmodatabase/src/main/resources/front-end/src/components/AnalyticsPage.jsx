@@ -16,7 +16,7 @@ function AnalyticsPage(props){
     const [columnsData, setColumnsData] = useState(null);
 
     if (queries === null){
-        fetch("http://127.0.0.1:1234/api/getQueriesList", {
+        fetch("/api/getQueriesList", {
             method: "POST",
             body: JSON.stringify({}),
             headers: { 'Content-Type': 'application/json' }

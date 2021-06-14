@@ -15,7 +15,7 @@ function ChangeTableComponent(props){
     let selectedTable = props.changeState.selectedTable;
 
     if (selectedTable !== props.loadedTableTable){
-        fetch("http://127.0.0.1:1234/api/getTableRows", {
+        fetch("/api/getTableRows", {
             method: "POST",
             body: JSON.stringify(selectedTable),
             headers: { 'Content-Type': 'application/json' }
@@ -64,7 +64,7 @@ function ChangeTableComponent(props){
     };
 
     let deleteOnClick = i => {
-        fetch("http://127.0.0.1:1234/api/removeRow", {
+        fetch("/api/removeRow", {
             method: "POST",
             body: JSON.stringify({
                 tableName: selectedTable,
@@ -82,7 +82,7 @@ function ChangeTableComponent(props){
     };
 
     let editSuccessOnClick = i => {
-        fetch("http://127.0.0.1:1234/api/editRow", {
+        fetch("/api/editRow", {
             method: "POST",
             body: JSON.stringify({
                 tableName: selectedTable,

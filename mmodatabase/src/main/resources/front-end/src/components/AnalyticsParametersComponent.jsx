@@ -30,7 +30,7 @@ function AnalyticsParametersComponent(props){
     };
 
     let onRequestClick = () => {
-        fetch("http://127.0.0.1:1234/api/getQueryResult", {
+        fetch("/api/getQueryResult", {
             method: "POST",
             body: JSON.stringify({ queryId: loadedQuery, queryParameters: columnsText }),
             headers: { 'Content-Type': 'application/json' }

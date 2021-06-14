@@ -25,7 +25,7 @@ function MainApp(){
     const [viewState, setViewState] = useState({ selectedTable: null });
 
     if (dbList.length === 0){
-        fetch("http://127.0.0.1:1234/api/getTables")
+        fetch("/api/getTables")
             .then(res => res.json())
             .then(result => {
                 setDbList(result);
